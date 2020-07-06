@@ -1,0 +1,49 @@
+<?php
+
+function owners_details_block_block_info() {
+  $blocks = array();
+  $blocks['owners_details_block'] = array(
+    'info' => t('Owners Details'),
+  );
+  return $blocks;
+}
+
+function owners_details_block_block_view($delta = '') {
+  $block = array();
+  
+  switch ($delta) {
+    case 'owners_details_block':
+      $block['subject'] = t('Owners Details');
+      global $user;
+      $userName = " ";
+      $userName = $user->name;
+      $company = " ";
+      $countProducts = " ";
+
+      $gids = db_select('og_membership', 'n')
+      ->fields('n', ['gid'])
+      ->condition('etid', $user->uid)
+      ->condition('field_name', 'og_user_node')
+      ->execute()
+      ->fetchAll();
+
+      foreach($gids as $row){
+        $company .= node_load($row->gid)->title . " " . l("edit", "node/$row->gid/edit") . ', ';
+        $count = db_select('og_membership', 'm')
+                ->fields('m')
+                ->condition('field_name', 'og_group_ref')
+                ->condition('gid', $row->gid)
+                ->execute()->rowCount();
+        $countProducts .=  $count . ', ';
+        }
+        
+        $company = substr($company, 0, -2);
+        $countProducts = substr($countProducts, 0, -2);
+        $userNameBlock = "<div>Your name: $userName " . l("edit", "user/$user->uid/edit") . "</div>";
+        $companyBlock = "<div>Organization: $company </div>";
+        $countsProductsBlock = "<div>Count products: $countProducts </div>";
+        $block['content'] = $userNameBlock . "</br>" . $companyBlock . "</br>" . $countsProductsBlock;
+        break;
+    }
+    return $block;
+  }

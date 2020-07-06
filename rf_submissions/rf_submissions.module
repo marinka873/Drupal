@@ -1,0 +1,139 @@
+<?php
+
+function rf_submissions_menu() {
+  $items = array();
+
+  $items['rf_submissions'] = array(
+    'title' => 'Rf Submissions',
+    'description' => 'Rf Submissions',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('rf_submissions_form'),
+    'access callback' => TRUE
+  );
+
+  $items['admin/config/rf_submissions'] = array(
+    'title' => 'Rf Submissions',
+    'description' => 'Rf Submissions',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('rf_submissions_admin'),
+    'access arguments' => array('administer rf_submissions settings'),
+    'type' => MENU_NORMAL_ITEM,
+   );
+
+  return $items;
+}
+
+function rf_submissions_form($form, &$form_state) {
+
+$form['name'] = array(
+  "#type" => 'textfield',
+  '#title' => 'Name',
+  '#size' => 50,
+  '#maxlength' => 100,
+  '#required' => TRUE,
+);
+
+$form['email'] = array(
+  '#type' => 'textfield',
+  '#title' => 'Email',
+  '#size' => 50,
+  '#maxlength' => 100,
+  '#required' => TRUE,
+);    
+
+$form['phone'] = array(
+  '#type' => 'textfield',
+  '#title' => 'Phone',
+  '#size' => 50,
+  '#maxlength' => 100,
+  '#required' => TRUE,
+ );
+
+$form ['organization'] = array(
+  '#type' => 'textfield',
+  '#title' => 'Organization',
+  '#size' => 50,
+  '#maxlength' => 100,
+  '#required' => TRUE,
+  );
+
+$form['count'] = array(
+  '#type' => 'textfield',
+  '#attributes' => array(
+    'data-type' => 'number',
+    ),
+    '#title' => 'Count of employees',
+    '#size' => 50,
+    '#maxlength' => 100,
+    '#required' => TRUE,
+);
+
+$form['city'] = array(
+  '#type' => 'textfield',
+  '#title' => 'City',
+  '#size' => 50,
+  '#maxlength' => 100,
+  '#required' => TRUE,
+);
+
+$form['submit'] = array(
+  '#type' => 'submit',
+  '#value' => t('Click Here!'),
+  );
+  
+  return $form;
+}
+
+function rf_submissions_form_validate($form, &$form_state) {
+  if(!filter_var($form_state['values']['email'], FILTER_VALIDATE_EMAIL)){
+    form_set_error('Email', 'Input valid email');
+    }
+}
+
+function rf_submissions_form_submit($form, &$form_state) {
+  $name = $form_state['values'] ['name'];
+  $email = $form_state ['values'] ['email'];
+  $phone = $form_state ['values'] ['phone'];
+  $organization = $form_state['values'] ['organization'];
+  $count = $form_state ['values'] ['count'];
+  $city = $form_state ['values'] ['city'];
+    
+  $node = new stdClass();
+  $node->title = "RF submissions";
+  $node->type = 'rf_submissions';
+  $node->language = LANGUAGE_NONE;
+  //(1 or 0): publiched or not
+  $node->status = 1;
+  //(1 or 0): promoted to front page
+  $node->promote = 0;
+
+  $node->field_name_['und'][0]['value'] = $name;
+  $node->field_email['und'] [0] ['value'] = $email;
+  $node->field_phone['und'] [0] ['value'] = $phone;
+  $node->field_organization['und'] [0] ['value'] = $organization;
+  $node->field_count_of_employees ['und'] [0] ['value'] = $count;
+  $node->field_city_ ['und'] [0] ['value'] = $city;
+  $node->field_date ['und'][0] = array(
+    'value' => format_date(strtotime('now'), 'custom', 'Y-m-d H:i:s', 'UTC'),
+    'timezone' => 'UTC',  
+    'timezone_db' => 'UTC',
+  );
+  
+  $node = node_submit($node);
+  node_save($node);
+}
+
+function rf_submissions_admin() {
+  $form = array();
+  
+  $form['rf_submissions_email_recipient'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Recipient Email'),
+    '#default_value' => '',
+    '#size' => 15,
+    '#maxlength' => 15,
+    '#description' => t("Recipient Email"),
+    '#required' => TRUE,
+  );
+  return system_settings_form($form);
+}
